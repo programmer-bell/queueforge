@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { migrate } from '../src/db/migrate.js';
 import { closePool, pool } from '../src/db/pool.js';
 import { enqueueJob } from '../src/jobs/enqueue.js';
