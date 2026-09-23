@@ -1,6 +1,7 @@
 import express, { type Express } from 'express';
 import { config } from './config.js';
 import { logger } from './logger.js';
+import { jobsRouter } from './routes/jobs.js';
 
 export function createApp(): Express {
   const app = express();
@@ -10,6 +11,8 @@ export function createApp(): Express {
   app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok' });
   });
+
+  app.use('/api/jobs', jobsRouter);
 
   return app;
 }
