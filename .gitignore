@@ -1,0 +1,35 @@
+# --- Dependencies ---
+node_modules/
+
+# --- Build output ---
+dist/
+*.tsbuildinfo
+
+# --- Environment / secrets ---
+# Never commit real env values — .env.sample stays tracked as the template.
+.env
+.env.*
+!.env.sample
+
+# --- Logs ---
+logs/
+*.log
+npm-debug.log*
+
+# --- Test / coverage ---
+coverage/
+.nyc_output/
+
+# --- Editor / OS cruft ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- Local Postgres data volume (if ever bind-mounted instead of a named volume) ---
+pgdata/
+
+# --- Render / misc local artifacts ---
+*.tsbuildinfo
+.cache/
