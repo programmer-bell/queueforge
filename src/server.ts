@@ -3,6 +3,7 @@ import { config } from './config.js';
 import { shutdownWorkerPool, startWorkerPool } from './jobs/poolManager.js';
 import { logger } from './logger.js';
 import { jobsRouter } from './routes/jobs.js';
+import { pagesRouter } from './routes/pages.js';
 
 export function createApp(): Express {
   const app = express();
@@ -14,6 +15,7 @@ export function createApp(): Express {
   });
 
   app.use('/api/jobs', jobsRouter);
+  app.use('/', pagesRouter);
 
   return app;
 }
