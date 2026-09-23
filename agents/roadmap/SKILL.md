@@ -3,10 +3,10 @@
 Build in this order. Each phase should leave the app in a runnable state. Follow the constraints in `agents/instructions/SKILL.md` throughout — this file is sequencing only, not a second source of rules.
 
 ## Phase 0 — Bootstrap
-- [ ] `package.json`, `tsconfig.json` (strict), eslint + prettier config
-- [ ] Folder skeleton matching the README tree
-- [ ] `src/config.ts` reading env vars into a typed object, with `.env.sample` kept in sync
-- [ ] `src/server.ts` — Express app boots, `GET /health` returns 200
+- [x] `package.json`, `tsconfig.json` (strict), eslint + prettier config
+- [x] Folder skeleton matching the README tree
+- [x] `src/config.ts` reading env vars into a typed object, with `.env.sample` kept in sync
+- [x] `src/server.ts` — Express app boots, `GET /health` returns 200
 
 ## Phase 1 — Database layer
 - [ ] `src/db/pool.ts` — `pg.Pool` using `DATABASE_URL`
@@ -75,4 +75,4 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 
 ## Status
 
-_Update this section as phases complete — not pre-filled, since the agent building this owns tracking its own progress._
+- Phase 0 complete (branch `phase-0-bootstrap`): Express boots, `GET /health` → 200, typed `config` from env with `.env.sample` in sync (incl. optional `DASHBOARD_TOKEN`), `lint`/`typecheck`/`build`/`test`/`migrate` scripts green. Phases 1–11 not started.
