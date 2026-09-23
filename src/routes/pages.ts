@@ -1,10 +1,13 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { pool } from '../db/pool.js';
 import { respond } from '../http/respond.js';
+import { listDeadJobs } from '../jobs/dlq.js';
 import { getJobDetail } from '../jobs/getJob.js';
 import { listJobs } from '../jobs/listJobs.js';
 import { getStats } from '../jobs/stats.js';
 import { dashboardPage } from '../views/dashboard.js';
+import { dlqPageFragment } from '../views/dlq.js';
 import {
   jobDetailFragment,
   jobFilterFormFragment,
@@ -103,6 +106,35 @@ pagesRouter.get('/jobs/:id', (req, res, next) => {
         html: fragment,
         json: detail,
         page: layout(`Job ${detail.job.id.slice(0, 8)}`, 'jobs', fragment),
+      });
+    })
+    .catch(next);
+});
+
+// GET /dlq — dead-letter queue page with replay buttons (public).
+const dlqPageQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  per_page: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+pagesRouter.get('/dlq', (req, res, next) => {
+  const parsed = dlqPageQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    respond(req, res, {
+      status: 400,
+      html: `<div class="alert alert-danger">Invalid query.</div>`,
+      json: { error: 'validation_error', details: parsed.error.flatten() },
+      page: layout('DLQ', 'dlq', `<div class="alert alert-danger">Invalid query.</div>`),
+    });
+    return;
+  }
+  listDeadJobs(pool, parsed.data.page, parsed.data.per_page)
+    .then((result) => {
+      const fragment = dlqPageFragment(result.jobs, result.page, result.perPage, result.total);
+      respond(req, res, {
+        html: fragment,
+        json: result,
+        page: layout('DLQ', 'dlq', fragment),
       });
     })
     .catch(next);

@@ -5,6 +5,7 @@ import { stopStatsTicker, startStatsTicker } from './events/statsTicker.js';
 import { shutdownWorkerPool, startWorkerPool } from './jobs/poolManager.js';
 import { logger } from './logger.js';
 import { eventsRouter } from './routes/events.js';
+import { dlqRouter } from './routes/dlq.js';
 import { jobsRouter } from './routes/jobs.js';
 import { pagesRouter } from './routes/pages.js';
 import { statsRouter } from './routes/stats.js';
@@ -19,6 +20,7 @@ export function createApp(): Express {
   });
 
   app.use('/api/jobs', jobsRouter);
+  app.use('/api/dlq', dlqRouter);
   app.use('/api/stats', statsRouter);
   app.use('/events', eventsRouter);
   app.use('/', pagesRouter);
