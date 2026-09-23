@@ -1,5 +1,6 @@
 import express, { type Express } from 'express';
 import { config } from './config.js';
+import { shutdownWorkerPool, startWorkerPool } from './jobs/poolManager.js';
 import { logger } from './logger.js';
 import { jobsRouter } from './routes/jobs.js';
 
@@ -23,14 +24,20 @@ const isMainModule =
   process.argv[1]?.endsWith('server.ts') === true ||
   process.argv[1]?.endsWith('server.js') === true;
 
-// Exported `app` lets tests import the Express instance without binding a port.
+// Exported `app` lets tests import the Express instance without binding a port
+// or starting workers — the pool only boots in the real entrypoint below.
 if (isMainModule && process.env['VITEST'] === undefined) {
+  await startWorkerPool();
   const server = app.listen(config.port, () => {
     logger.info({ port: config.port, nodeEnv: config.nodeEnv }, 'queueforge listening');
   });
 
-  const shutdown = (signal: NodeJS.Signals): void => {
-    logger.info({ signal }, 'shutdown signal received, closing HTTP server');
+  // Graceful shutdown (Render sends SIGTERM on every deploy): stop claiming
+  // immediately, let in-flight jobs drain, then close HTTP and exit.
+  const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
+    logger.info({ signal }, 'shutdown signal received, draining workers');
+    await shutdownWorkerPool();
+    server.closeAllConnections?.();
     server.close((err) => {
       if (err !== undefined) {
         logger.error({ err }, 'error while closing HTTP server');
@@ -41,9 +48,9 @@ if (isMainModule && process.env['VITEST'] === undefined) {
   };
 
   process.on('SIGTERM', () => {
-    shutdown('SIGTERM');
+    void shutdown('SIGTERM');
   });
   process.on('SIGINT', () => {
-    shutdown('SIGINT');
+    void shutdown('SIGINT');
   });
 }

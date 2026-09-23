@@ -23,11 +23,11 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - [x] Unit tests for idempotency behavior
 
 ## Phase 3 — Worker engine
-- [ ] `src/jobs/claim.ts` — the `SKIP LOCKED` claim query, isolated and testable
-- [ ] `src/jobs/worker.ts` — `worker_threads` pool, `LISTEN/NOTIFY` wake-up + poll fallback
-- [ ] Retry/backoff transition logic; DLQ transition on max attempts
-- [ ] Graceful shutdown on `SIGTERM`/`SIGINT`
-- [ ] Concurrency test: N parallel claims never double-assign a job
+- [x] `src/jobs/claim.ts` — the `SKIP LOCKED` claim query, isolated and testable
+- [x] `src/jobs/worker.ts` — `worker_threads` pool, `LISTEN/NOTIFY` wake-up + poll fallback
+- [x] Retry/backoff transition logic; DLQ transition on max attempts
+- [x] Graceful shutdown on `SIGTERM`/`SIGINT`
+- [x] Concurrency test: N parallel claims never double-assign a job
 
 ## Phase 4 — Dashboard shell (htmx + Bootstrap)
 - [ ] Base layout template, Bootstrap via CDN
@@ -77,4 +77,5 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 
 - Phase 0 complete (branch `phase-0-bootstrap`, merged): Express boots, `GET /health` → 200, typed `config` from env, `.env.sample` in sync.
 - Phase 1 complete (branch `phase-1-database-layer`, merged): `pool.ts` + dedicated LISTEN client, migration runner with `migrations` tracking table, `001_init` (`jobs`, `job_events`, indexes), `002_notify_trigger` (`NOTIFY job_available`), `003_schedules` (`schedules`, `job_type_limits`); verified against docker-compose Postgres incl. NOTIFY round-trip and idempotent re-runs; `tests/db.test.ts` (4 tests) green.
-- Phase 2 complete (branch `phase-2-job-api`, merged): enqueue with idempotency upsert-or-return, filtered/paginated list, detail + event timeline, cancel for queued jobs only; zod at every boundary, single `respond()` htmx/JSON helper, `requireToken` on mutations, `job.transition` bus events on enqueue/cancel; `tests/jobs.test.ts` (12 tests) incl. token-gating green. Phases 3–11 not started.
+- Phase 2 complete (branch `phase-2-job-api`, merged): enqueue with idempotency upsert-or-return, filtered/paginated list, detail + event timeline, cancel for queued jobs only; zod at every boundary, single `respond()` htmx/JSON helper, `requireToken` on mutations, `job.transition` bus events on enqueue/cancel; `tests/jobs.test.ts` (12 tests) incl. token-gating green.
+- Phase 3 complete (branch `phase-3-worker`, merged): `SKIP LOCKED` claim (CTE shape + per-type limits in-txn), `worker_threads` pool with LISTEN wake + poll fallback, exp-backoff retry → `dead` DLQ, `SIGTERM` drain shutdown; `tests/claim.test.ts` (9) + `tests/worker.test.ts` (4, incl. live drain/timeout) green; `vitest.config.ts` serializes files on one shared DB. Phases 4–11 not started.
