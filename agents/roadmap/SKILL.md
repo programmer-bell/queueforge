@@ -36,10 +36,10 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - [x] "Enqueue test job" form on the dashboard for live demo purposes
 
 ## Phase 5 — Live updates (SSE)
-- [ ] `src/events/bus.ts` in-process event bus
-- [ ] `GET /events` SSE endpoint with keepalive comments
-- [ ] Dashboard wired via htmx SSE extension (or vanilla `EventSource` + DOM patch) for `job.transition` and `stats.tick`
-- [ ] `GET /api/stats` backing the initial page load (SSE only patches deltas)
+- [x] `src/events/bus.ts` in-process event bus
+- [x] `GET /events` SSE endpoint with keepalive comments
+- [x] Dashboard wired via htmx SSE extension (or vanilla `EventSource` + DOM patch) for `job.transition` and `stats.tick`
+- [x] `GET /api/stats` backing the initial page load (SSE only patches deltas)
 
 ## Phase 6 — DLQ & replay
 - [ ] `GET /api/dlq`, `GET /dlq` page
@@ -79,4 +79,5 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - Phase 1 complete (branch `phase-1-database-layer`, merged): `pool.ts` + dedicated LISTEN client, migration runner with `migrations` tracking table, `001_init` (`jobs`, `job_events`, indexes), `002_notify_trigger` (`NOTIFY job_available`), `003_schedules` (`schedules`, `job_type_limits`); verified against docker-compose Postgres incl. NOTIFY round-trip and idempotent re-runs; `tests/db.test.ts` (4 tests) green.
 - Phase 2 complete (branch `phase-2-job-api`, merged): enqueue with idempotency upsert-or-return, filtered/paginated list, detail + event timeline, cancel for queued jobs only; zod at every boundary, single `respond()` htmx/JSON helper, `requireToken` on mutations, `job.transition` bus events on enqueue/cancel; `tests/jobs.test.ts` (12 tests) incl. token-gating green.
 - Phase 3 complete (branch `phase-3-worker`, merged): `SKIP LOCKED` claim (CTE shape + per-type limits in-txn), `worker_threads` pool with LISTEN wake + poll fallback, exp-backoff retry → `dead` DLQ, `SIGTERM` drain shutdown; `tests/claim.test.ts` (9) + `tests/worker.test.ts` (4, incl. live drain/timeout) green; `vitest.config.ts` serializes files on one shared DB.
-- Phase 4 complete (branch `phase-4-dashboard`, merged): layout + nav + token modal, `/` stats cards + enqueue test-job form + recent jobs, `/jobs` filter/pagination, `/jobs/:id` timeline + cancel; `respond()` extended with full-page support; `tests/dashboard.test.ts` (9) green. Phases 5–11 not started.
+- Phase 4 complete (branch `phase-4-dashboard`, merged): layout + nav + token modal, `/` stats cards + enqueue test-job form + recent jobs, `/jobs` filter/pagination, `/jobs/:id` timeline + cancel; `respond()` extended with full-page support; `tests/dashboard.test.ts` (9) green.
+- Phase 5 complete (branch `phase-5-sse`, merged): `GET /events` SSE (framed events, 20s keepalive, no-buffering headers, leak-free unsubscribe), 5s `stats.tick` ticker, `GET /api/stats` snapshot, vanilla `EventSource` dashboard patching (card ids, throttled recent-jobs refresh, live dot); shutdown now closes the shared pool (0 lingering conns); `tests/sse.test.ts` (6) green. Phases 6–11 not started.

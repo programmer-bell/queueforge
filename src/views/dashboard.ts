@@ -5,20 +5,20 @@ import { jobTableFragment } from './jobs.js';
 /** Dashboard home fragments: stat cards, recent-jobs table, enqueue test-job form. */
 
 export function statCardsFragment(stats: QueueStats): string {
-  const card = (label: string, value: number, sub: string): string =>
-    `<div class="col"><div class="card h-100"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted">${label}</h6><p class="card-text display-6 mb-0">${value}</p><p class="card-text"><small class="text-muted">${sub}</small></p></div></div></div>`;
+  const card = (key: string, label: string, value: number, sub: string): string =>
+    `<div class="col"><div class="card h-100"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted">${label}</h6><p class="card-text display-6 mb-0" id="stat-${key}">${value}</p><p class="card-text"><small class="text-muted">${sub}</small></p></div></div></div>`;
   return `<div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3 mb-4" id="stats-cards">
-${card('Queued', stats.counts.queued, 'waiting to run')}
-${card('Running', stats.counts.running, 'claimed by workers')}
-${card('Succeeded', stats.counts.succeeded, 'completed')}
-${card('Retrying', stats.counts.retrying, 'failed, backing off')}
-${card('Dead', stats.counts.dead, 'dead-letter queue')}
-${card('Throughput', stats.throughputPerMin, 'transitions / min')}
+${card('queued', 'Queued', stats.counts.queued, 'waiting to run')}
+${card('running', 'Running', stats.counts.running, 'claimed by workers')}
+${card('succeeded', 'Succeeded', stats.counts.succeeded, 'completed')}
+${card('retrying', 'Retrying', stats.counts.retrying, 'failed, backing off')}
+${card('dead', 'Dead', stats.counts.dead, 'dead-letter queue')}
+${card('throughput', 'Throughput', stats.throughputPerMin, 'transitions / min')}
 </div>`;
 }
 
 export function recentJobsFragment(jobs: Job[]): string {
-  return `<div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h5 mb-0">Recent jobs</h2><a href="/jobs" class="btn btn-sm btn-outline-secondary">View all</a></div>
+  return `<div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h5 mb-0">Recent jobs <span id="live-dot" class="badge text-bg-secondary">connecting…</span></h2><a href="/jobs" class="btn btn-sm btn-outline-secondary">View all</a></div>
 <div id="recent-jobs">${jobTableFragment(jobs)}</div>`;
 }
 
@@ -82,5 +82,56 @@ export function enqueueFormFragment(): string {
 }
 
 export function dashboardPage(stats: QueueStats, recent: Job[]): string {
-  return `${statCardsFragment(stats)}${enqueueFormFragment()}${recentJobsFragment(recent)}`;
+  return `${statCardsFragment(stats)}${enqueueFormFragment()}${recentJobsFragment(recent)}${liveUpdatesScript()}`;
+}
+
+/**
+ * Vanilla `EventSource` wiring (no client framework, no htmx extension):
+ * `stats.tick` patches card values in place; `job.transition` refreshes
+ * stats + the recent-jobs table (throttled against bursts). The status dot
+ * reflects the stream state — EventSource reconnects on its own.
+ */
+export function liveUpdatesScript(): string {
+  return `<script>
+(function () {
+  if (!document.getElementById('stats-cards')) return;
+  var dot = document.getElementById('live-dot');
+  function setDot(kind, text) {
+    if (!dot) return;
+    dot.className = 'badge text-bg-' + kind;
+    dot.textContent = text;
+  }
+  function patchStats(t) {
+    var map = { queued: 'stat-queued', running: 'stat-running', succeeded: 'stat-succeeded', failed: 'stat-retrying', dead: 'stat-dead', throughputPerMin: 'stat-throughput' };
+    for (var k in map) {
+      var el = document.getElementById(map[k]);
+      if (el && t[k] !== undefined) el.textContent = t[k];
+    }
+  }
+  var recentTimer = null;
+  function refreshRecent() {
+    if (recentTimer) return;
+    recentTimer = setTimeout(function () {
+      recentTimer = null;
+      fetch('/', { headers: { 'HX-Request': 'true' } })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+          var doc = new DOMParser().parseFromString(html, 'text/html');
+          var fresh = doc.getElementById('recent-jobs');
+          var cur = document.getElementById('recent-jobs');
+          if (fresh && cur) cur.innerHTML = fresh.innerHTML;
+        })
+        .catch(function () {});
+    }, 1500);
+  }
+  function refreshStats() {
+    fetch('/api/stats').then(function (r) { return r.json(); }).then(patchStats).catch(function () {});
+  }
+  var es = new EventSource('/events');
+  es.onopen = function () { setDot('success', 'live'); };
+  es.onerror = function () { setDot('danger', 'reconnecting…'); };
+  es.addEventListener('stats.tick', function (e) { patchStats(JSON.parse(e.data)); });
+  es.addEventListener('job.transition', function () { refreshStats(); refreshRecent(); });
+})();
+</script>`;
 }

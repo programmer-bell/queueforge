@@ -7,6 +7,31 @@ export interface QueueStats {
   throughputPerMin: number;
 }
 
+/**
+ * The `stats.tick` SSE payload / `GET /api/stats` body. `failed` is the
+ * retrying/backoff depth (there is no separate `failed` status — a failed
+ * attempt lands the job in `retrying` until attempts run out).
+ */
+export interface StatsTick {
+  queued: number;
+  running: number;
+  succeeded: number;
+  failed: number;
+  dead: number;
+  throughputPerMin: number;
+}
+
+export function toStatsTick(stats: QueueStats): StatsTick {
+  return {
+    queued: stats.counts.queued,
+    running: stats.counts.running,
+    succeeded: stats.counts.succeeded,
+    failed: stats.counts.retrying,
+    dead: stats.counts.dead,
+    throughputPerMin: stats.throughputPerMin,
+  };
+}
+
 const ALL_STATUSES: JobStatus[] = [
   'queued',
   'running',
