@@ -16,11 +16,11 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - [x] `npm run migrate` works against local docker-compose Postgres
 
 ## Phase 2 — Core job API
-- [ ] `POST /api/jobs` (enqueue, with idempotency handling)
-- [ ] `GET /api/jobs`, `GET /api/jobs/:id`
-- [ ] `POST /api/jobs/:id/cancel`
-- [ ] zod validation on all inputs
-- [ ] Unit tests for idempotency behavior
+- [x] `POST /api/jobs` (enqueue, with idempotency handling)
+- [x] `GET /api/jobs`, `GET /api/jobs/:id`
+- [x] `POST /api/jobs/:id/cancel`
+- [x] zod validation on all inputs
+- [x] Unit tests for idempotency behavior
 
 ## Phase 3 — Worker engine
 - [ ] `src/jobs/claim.ts` — the `SKIP LOCKED` claim query, isolated and testable
@@ -76,4 +76,5 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 ## Status
 
 - Phase 0 complete (branch `phase-0-bootstrap`, merged): Express boots, `GET /health` → 200, typed `config` from env, `.env.sample` in sync.
-- Phase 1 complete (branch `phase-1-database-layer`): `pool.ts` + dedicated LISTEN client, migration runner with `migrations` tracking table, `001_init` (`jobs`, `job_events`, indexes), `002_notify_trigger` (`NOTIFY job_available`), `003_schedules` (`schedules`, `job_type_limits`); verified against docker-compose Postgres incl. NOTIFY round-trip and idempotent re-runs; `tests/db.test.ts` (4 tests) green. Phases 2–11 not started.
+- Phase 1 complete (branch `phase-1-database-layer`, merged): `pool.ts` + dedicated LISTEN client, migration runner with `migrations` tracking table, `001_init` (`jobs`, `job_events`, indexes), `002_notify_trigger` (`NOTIFY job_available`), `003_schedules` (`schedules`, `job_type_limits`); verified against docker-compose Postgres incl. NOTIFY round-trip and idempotent re-runs; `tests/db.test.ts` (4 tests) green.
+- Phase 2 complete (branch `phase-2-job-api`, merged): enqueue with idempotency upsert-or-return, filtered/paginated list, detail + event timeline, cancel for queued jobs only; zod at every boundary, single `respond()` htmx/JSON helper, `requireToken` on mutations, `job.transition` bus events on enqueue/cancel; `tests/jobs.test.ts` (12 tests) incl. token-gating green. Phases 3–11 not started.
