@@ -17,6 +17,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
+    "pretest": "npm run build",
     "test": "vitest run",
     "migrate": "tsx src/db/migrate.ts"
   },
