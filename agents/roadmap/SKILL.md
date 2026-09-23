@@ -30,10 +30,10 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - [x] Concurrency test: N parallel claims never double-assign a job
 
 ## Phase 4 — Dashboard shell (htmx + Bootstrap)
-- [ ] Base layout template, Bootstrap via CDN
-- [ ] `GET /` — stats cards (queued/running/succeeded/failed/dead), recent jobs table
-- [ ] `GET /jobs`, `GET /jobs/:id` (timeline view from `job_events`)
-- [ ] "Enqueue test job" form on the dashboard for live demo purposes
+- [x] Base layout template, Bootstrap via CDN
+- [x] `GET /` — stats cards (queued/running/succeeded/failed/dead), recent jobs table
+- [x] `GET /jobs`, `GET /jobs/:id` (timeline view from `job_events`)
+- [x] "Enqueue test job" form on the dashboard for live demo purposes
 
 ## Phase 5 — Live updates (SSE)
 - [ ] `src/events/bus.ts` in-process event bus
@@ -78,4 +78,5 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - Phase 0 complete (branch `phase-0-bootstrap`, merged): Express boots, `GET /health` → 200, typed `config` from env, `.env.sample` in sync.
 - Phase 1 complete (branch `phase-1-database-layer`, merged): `pool.ts` + dedicated LISTEN client, migration runner with `migrations` tracking table, `001_init` (`jobs`, `job_events`, indexes), `002_notify_trigger` (`NOTIFY job_available`), `003_schedules` (`schedules`, `job_type_limits`); verified against docker-compose Postgres incl. NOTIFY round-trip and idempotent re-runs; `tests/db.test.ts` (4 tests) green.
 - Phase 2 complete (branch `phase-2-job-api`, merged): enqueue with idempotency upsert-or-return, filtered/paginated list, detail + event timeline, cancel for queued jobs only; zod at every boundary, single `respond()` htmx/JSON helper, `requireToken` on mutations, `job.transition` bus events on enqueue/cancel; `tests/jobs.test.ts` (12 tests) incl. token-gating green.
-- Phase 3 complete (branch `phase-3-worker`, merged): `SKIP LOCKED` claim (CTE shape + per-type limits in-txn), `worker_threads` pool with LISTEN wake + poll fallback, exp-backoff retry → `dead` DLQ, `SIGTERM` drain shutdown; `tests/claim.test.ts` (9) + `tests/worker.test.ts` (4, incl. live drain/timeout) green; `vitest.config.ts` serializes files on one shared DB. Phases 4–11 not started.
+- Phase 3 complete (branch `phase-3-worker`, merged): `SKIP LOCKED` claim (CTE shape + per-type limits in-txn), `worker_threads` pool with LISTEN wake + poll fallback, exp-backoff retry → `dead` DLQ, `SIGTERM` drain shutdown; `tests/claim.test.ts` (9) + `tests/worker.test.ts` (4, incl. live drain/timeout) green; `vitest.config.ts` serializes files on one shared DB.
+- Phase 4 complete (branch `phase-4-dashboard`, merged): layout + nav + token modal, `/` stats cards + enqueue test-job form + recent jobs, `/jobs` filter/pagination, `/jobs/:id` timeline + cancel; `respond()` extended with full-page support; `tests/dashboard.test.ts` (9) green. Phases 5–11 not started.

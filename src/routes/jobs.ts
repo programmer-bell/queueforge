@@ -21,14 +21,14 @@ const enqueueSchema = z.object({
   idempotency_key: z.string().min(1).max(200).optional(),
 });
 
-const listQuerySchema = z.object({
+export const listQuerySchema = z.object({
   status: z.enum(JOB_STATUSES).optional(),
   type: z.string().min(1).max(200).optional(),
   page: z.coerce.number().int().min(1).default(1),
   per_page: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-const idParamSchema = z.object({
+export const idParamSchema = z.object({
   id: z.string().uuid(),
 });
 
