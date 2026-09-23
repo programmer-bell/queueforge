@@ -1,9 +1,13 @@
 import express, { type Express } from 'express';
 import { config } from './config.js';
+import { closePool } from './db/pool.js';
+import { stopStatsTicker, startStatsTicker } from './events/statsTicker.js';
 import { shutdownWorkerPool, startWorkerPool } from './jobs/poolManager.js';
 import { logger } from './logger.js';
+import { eventsRouter } from './routes/events.js';
 import { jobsRouter } from './routes/jobs.js';
 import { pagesRouter } from './routes/pages.js';
+import { statsRouter } from './routes/stats.js';
 
 export function createApp(): Express {
   const app = express();
@@ -15,6 +19,8 @@ export function createApp(): Express {
   });
 
   app.use('/api/jobs', jobsRouter);
+  app.use('/api/stats', statsRouter);
+  app.use('/events', eventsRouter);
   app.use('/', pagesRouter);
 
   return app;
@@ -30,6 +36,7 @@ const isMainModule =
 // or starting workers — the pool only boots in the real entrypoint below.
 if (isMainModule && process.env['VITEST'] === undefined) {
   await startWorkerPool();
+  startStatsTicker();
   const server = app.listen(config.port, () => {
     logger.info({ port: config.port, nodeEnv: config.nodeEnv }, 'queueforge listening');
   });
@@ -39,6 +46,8 @@ if (isMainModule && process.env['VITEST'] === undefined) {
   const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
     logger.info({ signal }, 'shutdown signal received, draining workers');
     await shutdownWorkerPool();
+    stopStatsTicker();
+    await closePool();
     server.closeAllConnections?.();
     server.close((err) => {
       if (err !== undefined) {
