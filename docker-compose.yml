@@ -1,0 +1,50 @@
+services:
+  app:
+    build:
+      context: .
+      target: builder      # dev target: run against compiled-once build, re-run `npm run build` on change,
+                            # or swap CMD below for `npm run dev` (tsx watch) if you prefer hot reload.
+    command: sh -c "npm run migrate && npm run dev"
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://queueforge:queueforge@db:5432/queueforge
+      PORT: 3000
+    volumes:
+      - ./src:/app/src
+      - ./package.json:/app/package.json
+      - ./tsconfig.json:/app/tsconfig.json
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: queueforge
+      POSTGRES_PASSWORD: queueforge
+      POSTGRES_DB: queueforge
+    ports:
+      - "5432:5432"
+    volumes:
+      - queueforge_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U queueforge -d queueforge"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Optional local DB inspector — run with `docker compose --profile tools up`
+  adminer:
+    image: adminer:latest
+    profiles: ["tools"]
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  queueforge_pgdata:

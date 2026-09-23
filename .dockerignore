@@ -1,0 +1,36 @@
+# --- Never send secrets into the build context ---
+.env
+.env.*
+!.env.sample
+
+# --- Dependencies / build output (installed & built fresh inside the image) ---
+node_modules/
+dist/
+*.tsbuildinfo
+
+# --- Version control / CI / agent docs (irrelevant to the runtime image) ---
+.git/
+.gitignore
+.github/
+agents/
+
+# --- Docs (don't bloat the build context) ---
+README.md
+*.md
+
+# --- Local dev / editor / OS cruft ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- Test / coverage (not needed in the runtime image) ---
+coverage/
+.nyc_output/
+**/*.test.ts
+**/*.spec.ts
+
+# --- Local orchestration files (not needed inside the image itself) ---
+docker-compose.yml
+render.yaml
