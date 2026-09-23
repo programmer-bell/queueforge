@@ -173,4 +173,4 @@ See [`agents/roadmap/SKILL.md`](./agents/roadmap/SKILL.md) for the phased build 
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
