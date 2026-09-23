@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: queueforge
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      - key: WORKER_CONCURRENCY
+        value: "4"
+      - key: POLL_INTERVAL_MS
+        value: "5000"
+      - key: JOB_MAX_ATTEMPTS_DEFAULT
+        value: "5"
+      - key: RETRY_BASE_DELAY_SECONDS
+        value: "10"
+      - key: RETRY_MAX_DELAY_SECONDS
+        value: "3600"
+      - key: SHUTDOWN_DRAIN_TIMEOUT_MS
+        value: "25000"
+      - key: SCHEDULER_TICK_MS
+        value: "30000"
+      - key: ENQUEUE_RATE_LIMIT_PER_MIN
+        value: "60"
+      # Secrets: set these manually in the Render dashboard, not committed here.
+      - key: DATABASE_URL
+        sync: false
+      - key: DASHBOARD_TOKEN
+        sync: false
+
+# Notes:
+# - Render's free plan only offers free Web Services (Background Workers and
+#   Cron Jobs are paid-only), which is why QueueForge runs its job workers and
+#   scheduler in-process (worker_threads) inside this single web service.
+# - PORT is injected automatically by Render at runtime; the app reads
+#   process.env.PORT and must not hardcode 3000 in production.
+# - DATABASE_URL should point at your Neon *pooled* connection string.
