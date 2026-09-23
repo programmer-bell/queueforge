@@ -9,11 +9,11 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - [x] `src/server.ts` — Express app boots, `GET /health` returns 200
 
 ## Phase 1 — Database layer
-- [ ] `src/db/pool.ts` — `pg.Pool` using `DATABASE_URL`
-- [ ] Migration runner + `001_init.sql`: `jobs`, `job_events` tables, indexes on `(status, run_at)` and `(type)`
-- [ ] `002_notify_trigger.sql`: trigger + function that `NOTIFY job_available` on relevant insert/update
-- [ ] `003_schedules.sql`: `schedules`, `job_type_limits` tables
-- [ ] `npm run migrate` works against local docker-compose Postgres
+- [x] `src/db/pool.ts` — `pg.Pool` using `DATABASE_URL`
+- [x] Migration runner + `001_init.sql`: `jobs`, `job_events` tables, indexes on `(status, run_at)` and `(type)`
+- [x] `002_notify_trigger.sql`: trigger + function that `NOTIFY job_available` on relevant insert/update
+- [x] `003_schedules.sql`: `schedules`, `job_type_limits` tables
+- [x] `npm run migrate` works against local docker-compose Postgres
 
 ## Phase 2 — Core job API
 - [ ] `POST /api/jobs` (enqueue, with idempotency handling)
@@ -75,4 +75,5 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 
 ## Status
 
-- Phase 0 complete (branch `phase-0-bootstrap`): Express boots, `GET /health` → 200, typed `config` from env with `.env.sample` in sync (incl. optional `DASHBOARD_TOKEN`), `lint`/`typecheck`/`build`/`test`/`migrate` scripts green. Phases 1–11 not started.
+- Phase 0 complete (branch `phase-0-bootstrap`, merged): Express boots, `GET /health` → 200, typed `config` from env, `.env.sample` in sync.
+- Phase 1 complete (branch `phase-1-database-layer`): `pool.ts` + dedicated LISTEN client, migration runner with `migrations` tracking table, `001_init` (`jobs`, `job_events`, indexes), `002_notify_trigger` (`NOTIFY job_available`), `003_schedules` (`schedules`, `job_type_limits`); verified against docker-compose Postgres incl. NOTIFY round-trip and idempotent re-runs; `tests/db.test.ts` (4 tests) green. Phases 2–11 not started.
