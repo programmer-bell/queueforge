@@ -1,6 +1,18 @@
 # QueueForge
 
-**A distributed job queue & scheduler, built from scratch on raw PostgreSQL — no Redis, no Bull, no ORM.**
+<div align="center">
+  <img src="src/icon/icon.png" alt="QueueForge logo" width="96" height="96" />
+</div>
+
+<h1 align="center">QueueForge</h1>
+
+<p align="center">
+  <strong>A distributed job queue & scheduler, built from scratch on raw PostgreSQL — no Redis, no Bull, no ORM.</strong>
+</p>
+
+<p align="center">
+  🔴 <strong>Live demo:</strong> <a href="https://queueforge-ukps.onrender.com/">queueforge-ukps.onrender.com</a>
+</p>
 
 Node.js + TypeScript · htmx + Bootstrap dashboard · Server-Sent Events · Postgres `SKIP LOCKED` job claiming · retries with backoff · dead-letter queue · cron-style recurring jobs.
 
@@ -55,7 +67,7 @@ Most "job queue" side projects wrap BullMQ or Celery. This one **is** the queue 
 | HTTP | Express |
 | Database driver | `pg` — raw parameterized SQL, no ORM, hand-written migrations |
 | Database | PostgreSQL (Neon serverless, free tier) |
-| Frontend | htmx + Bootstrap 5 (CDN) + vanilla JS for `EventSource` wiring |
+| Frontend | htmx + Bootstrap 5 (CDN) + Vercel/Geist-inspired dark theme + vanilla JS for `EventSource` wiring |
 | Realtime | Server-Sent Events (`/events`) |
 | Concurrency | `worker_threads` job workers, `LISTEN/NOTIFY` wake-up |
 | Validation | zod |
@@ -161,6 +173,8 @@ rows.
 See [`.env.sample`](./.env.sample) for the full list with defaults — includes `DATABASE_URL`, `WORKER_CONCURRENCY`, `POLL_INTERVAL_MS`, `JOB_MAX_ATTEMPTS_DEFAULT`, `ENQUEUE_RATE_LIMIT_PER_MIN`, and an optional `DASHBOARD_TOKEN` to lightly protect the public demo dashboard.
 
 ## Deployment (Render + Neon)
+
+**Live demo:** <https://queueforge-ukps.onrender.com/> (free tier — first load after idle may be slow due to cold starts).
 
 1. Create a free Postgres database at [neon.tech](https://neon.tech) and copy the pooled connection string.
 2. Push this repo to GitHub.

@@ -8,7 +8,7 @@ export function dlqTableFragment(jobs: Job[]): string {
   if (jobs.length === 0) {
     return `<div class="alert alert-success">DLQ is empty — no permanently failed jobs.</div>`;
   }
-  return `<table class="table table-sm table-hover"><thead><tr><th>ID</th><th>Type</th><th>Attempts</th><th>Last error</th><th>Dead since</th><th></th></tr></thead><tbody>${jobs.map(dlqRowFragment).join('')}</tbody></table>`;
+  return `<div class="table-responsive"><table class="table table-sm table-hover"><thead><tr><th>ID</th><th>Type</th><th>Attempts</th><th>Last error</th><th>Dead since</th><th></th></tr></thead><tbody>${jobs.map(dlqRowFragment).join('')}</tbody></table></div>`;
 }
 
 function dlqRowFragment(job: Job): string {

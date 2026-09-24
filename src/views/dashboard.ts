@@ -6,7 +6,7 @@ import { jobTableFragment } from './jobs.js';
 
 export function statCardsFragment(stats: QueueStats): string {
   const card = (key: string, label: string, value: number, sub: string): string =>
-    `<div class="col"><div class="card h-100"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted">${label}</h6><p class="card-text display-6 mb-0" id="stat-${key}">${value}</p><p class="card-text"><small class="text-muted">${sub}</small></p></div></div></div>`;
+    `<div class="col"><div class="card h-100"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted">${label}</h6><p class="card-text display-6 mb-0" id="stat-${key}" data-countup="${value}">${value}</p><p class="card-text"><small class="text-muted">${sub}</small></p></div></div></div>`;
   return `<div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3 mb-4" id="stats-cards">
 ${card('queued', 'Queued', stats.counts.queued, 'waiting to run')}
 ${card('running', 'Running', stats.counts.running, 'claimed by workers')}
@@ -48,7 +48,7 @@ export function enqueueFormFragment(): string {
     if (!recent) return;
     var table = recent.querySelector('table tbody');
     if (table) table.insertAdjacentHTML('afterbegin', rowHtml);
-    else recent.insertAdjacentHTML('beforeend', '<table class="table table-sm table-hover"><thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Attempts</th><th>Created</th></tr></thead><tbody>' + rowHtml + '</tbody></table>');
+    else recent.insertAdjacentHTML('beforeend', '<div class="table-responsive"><table class="table table-sm table-hover"><thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Attempts</th><th>Created</th></tr></thead><tbody>' + rowHtml + '</tbody></table></div>');
   }
   var form = document.getElementById('enqueue-form');
   if (!form) return;
@@ -101,11 +101,20 @@ export function liveUpdatesScript(): string {
     dot.className = 'badge text-bg-' + kind;
     dot.textContent = text;
   }
+  function flash(el) {
+    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    el.classList.remove('qf-flash');
+    void el.offsetWidth;
+    el.classList.add('qf-flash');
+  }
   function patchStats(t) {
     var map = { queued: 'stat-queued', running: 'stat-running', succeeded: 'stat-succeeded', failed: 'stat-retrying', dead: 'stat-dead', throughputPerMin: 'stat-throughput' };
     for (var k in map) {
       var el = document.getElementById(map[k]);
-      if (el && t[k] !== undefined) el.textContent = t[k];
+      if (el && t[k] !== undefined && el.textContent != String(t[k])) {
+        el.textContent = t[k];
+        flash(el.closest('.card'));
+      }
     }
   }
   var recentTimer = null;
@@ -119,7 +128,10 @@ export function liveUpdatesScript(): string {
           var doc = new DOMParser().parseFromString(html, 'text/html');
           var fresh = doc.getElementById('recent-jobs');
           var cur = document.getElementById('recent-jobs');
-          if (fresh && cur) cur.innerHTML = fresh.innerHTML;
+          if (fresh && cur && fresh.innerHTML !== cur.innerHTML) {
+            cur.innerHTML = fresh.innerHTML;
+            flash(cur);
+          }
         })
         .catch(function () {});
     }, 1500);

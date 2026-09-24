@@ -19,7 +19,7 @@ export function jobRowFragment(job: Job): string {
 
 export function jobTableFragment(jobs: Job[]): string {
   if (jobs.length === 0) return `<p class="text-muted">No jobs found.</p>`;
-  return `<table class="table table-sm table-hover"><thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Attempts</th><th>Created</th></tr></thead><tbody>${jobs.map(jobRowFragment).join('')}</tbody></table>`;
+  return `<div class="table-responsive"><table class="table table-sm table-hover"><thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Attempts</th><th>Created</th></tr></thead><tbody>${jobs.map(jobRowFragment).join('')}</tbody></table></div>`;
 }
 
 /** Backwards-compatible list fragment used by the JSON/HTML API routes. */
@@ -67,12 +67,12 @@ export function jobDetailFragment(job: Job, events: JobEvent[]): string {
   const timeline =
     events.length === 0
       ? `<p class="text-muted">No transitions recorded.</p>`
-      : `<table class="table table-sm"><thead><tr><th>Transition</th><th>Attempt</th><th>Message</th><th>At</th></tr></thead><tbody>${events
+      : `<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Transition</th><th>Attempt</th><th>Message</th><th>At</th></tr></thead><tbody>${events
           .map(
             (e) =>
               `<tr><td><code>${escapeHtml(e.from_status ?? '∅')} → ${escapeHtml(e.to_status)}</code></td><td>${e.attempt}</td><td>${escapeHtml(e.message ?? '—')}</td><td>${formatTime(e.created_at)}</td></tr>`,
           )
-          .join('')}</tbody></table>`;
+          .join('')}</tbody></table></div>`;
   const cancel =
     job.status === 'queued'
       ? `<button class="btn btn-sm btn-outline-danger" hx-post="/api/jobs/${escapeHtml(job.id)}/cancel" data-reload-on-success="true" hx-swap="none">Cancel job</button>`

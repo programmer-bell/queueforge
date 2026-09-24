@@ -2,6 +2,8 @@ import express, { type Express } from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { randomUUID } from 'node:crypto';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
 import { closePool } from './db/pool.js';
 import { stopStatsTicker, startStatsTicker } from './events/statsTicker.js';
@@ -19,6 +21,11 @@ import { statsRouter } from './routes/stats.js';
 export function createApp(): Express {
   const app = express();
   app.use(express.json());
+
+  // Brand assets (logo/favicon). Resolves to src/icon under tsx and
+  // dist/icon in the production image (Dockerfile copies it there).
+  const iconDir = join(dirname(fileURLToPath(import.meta.url)), 'icon');
+  app.use('/assets', express.static(iconDir, { maxAge: '1d', immutable: true }));
 
   // Security headers. CSP allows the dashboard's inline scripts plus the
   // pinned Bootstrap/htmx CDNs — everything else stays locked down.

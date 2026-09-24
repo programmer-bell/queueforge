@@ -27,6 +27,8 @@ COPY --from=builder /app/dist ./dist
 COPY package*.json ./
 # raw SQL migrations must ship in the runtime image — the app applies them on boot
 COPY src/db/migrations ./dist/db/migrations
+# brand icon served by the app itself at /assets/icon.png
+COPY src/icon ./dist/icon
 
 USER queueforge
 
