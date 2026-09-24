@@ -52,11 +52,11 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - [x] `GET /schedules` management page
 
 ## Phase 8 — Hardening
-- [ ] Per-IP rate limiting on `POST /api/jobs`
-- [ ] `helmet` security headers
-- [ ] Optional `DASHBOARD_TOKEN` auth gate
-- [ ] Structured `pino` logging with request IDs
-- [ ] Central error-handling middleware, consistent JSON error shape
+- [x] Per-IP rate limiting on `POST /api/jobs`
+- [x] `helmet` security headers
+- [x] Optional `DASHBOARD_TOKEN` auth gate
+- [x] Structured `pino` logging with request IDs
+- [x] Central error-handling middleware, consistent JSON error shape
 
 ## Phase 9 — Docker & local dev
 - [x] Confirm `Dockerfile` multi-stage build produces a small runnable image
@@ -83,4 +83,5 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - Phase 5 complete (branch `phase-5-sse`, merged): `GET /events` SSE (framed events, 20s keepalive, no-buffering headers, leak-free unsubscribe), 5s `stats.tick` ticker, `GET /api/stats` snapshot, vanilla `EventSource` dashboard patching (card ids, throttled recent-jobs refresh, live dot); shutdown now closes the shared pool (0 lingering conns); `tests/sse.test.ts` (6) green.
 - Phase 6 complete (branch `phase-6-dlq`, merged): `GET /api/dlq`, `/dlq` page with replay buttons, `POST /api/dlq/:id/replay` resets attempts and moves jobs back to `queued`; `requireToken` on replays; fragments for htmx table rows and page nav; `tests/dlq.test.ts` (8) green.
 - Phase 7 complete (branch `phase-7-recurring-jobs`, merged): `cron-parser` validation + next-fire computation, schedules CRUD (`POST`/`GET`/`PATCH` with `requireToken` on mutations), in-process ticker (`SCHEDULER_TICK_MS`, row-locked fire-once, skip-over-duplicate) wired into boot/shutdown, `/schedules` page with create form + enable/disable toggles + nav link; `tests/schedules.test.ts` (12) green.
-- Phase 9–10 complete (branch `phase-9-10-docker-ci`, merged): multi-stage Docker image with healthcheck, clean-checkout compose defaults for app + Postgres + optional Adminer/seed service, idempotent demo seed data, and GitHub Actions CI for lint, typecheck, migrations, build, tests, and Docker image build. Phases 8 and 11 not started.
+- Phase 9–10 complete (branch `phase-9-10-docker-ci`, merged): multi-stage Docker image with healthcheck, clean-checkout compose defaults for app + Postgres + optional Adminer/seed service, idempotent demo seed data, and GitHub Actions CI for lint, typecheck, migrations, build, tests, and Docker image build.
+- Phase 8 complete (branch `phase-8-hardening`, merged): per-IP fixed-window rate limiting on `POST /api/jobs` (429 + `Retry-After`), `helmet` with dashboard-compatible CSP, `DASHBOARD_TOKEN` gate verified on all 5 mutating routes, `pino-http` request IDs echoed via `x-request-id`, central 404 + error middleware on the flat `{ error, message?, details?, requestId }` shape; `tests/hardening.test.ts` (6) green. Phase 11 not started.
