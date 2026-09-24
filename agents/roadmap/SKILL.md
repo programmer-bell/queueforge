@@ -47,9 +47,9 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - [x] Replay button wired via htmx on the DLQ page
 
 ## Phase 7 — Recurring jobs (cron)
-- [ ] `POST /api/schedules`, `GET /api/schedules`, `PATCH /api/schedules/:id`
-- [ ] In-process scheduler tick (e.g. every 30s) that evaluates cron expressions and enqueues due job instances
-- [ ] `GET /schedules` management page
+- [x] `POST /api/schedules`, `GET /api/schedules`, `PATCH /api/schedules/:id`
+- [x] In-process scheduler tick (e.g. every 30s) that evaluates cron expressions and enqueues due job instances
+- [x] `GET /schedules` management page
 
 ## Phase 8 — Hardening
 - [ ] Per-IP rate limiting on `POST /api/jobs`
@@ -81,5 +81,6 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - Phase 3 complete (branch `phase-3-worker`, merged): `SKIP LOCKED` claim (CTE shape + per-type limits in-txn), `worker_threads` pool with LISTEN wake + poll fallback, exp-backoff retry → `dead` DLQ, `SIGTERM` drain shutdown; `tests/claim.test.ts` (9) + `tests/worker.test.ts` (4, incl. live drain/timeout) green; `vitest.config.ts` serializes files on one shared DB.
 - Phase 4 complete (branch `phase-4-dashboard`, merged): layout + nav + token modal, `/` stats cards + enqueue test-job form + recent jobs, `/jobs` filter/pagination, `/jobs/:id` timeline + cancel; `respond()` extended with full-page support; `tests/dashboard.test.ts` (9) green.
 - Phase 5 complete (branch `phase-5-sse`, merged): `GET /events` SSE (framed events, 20s keepalive, no-buffering headers, leak-free unsubscribe), 5s `stats.tick` ticker, `GET /api/stats` snapshot, vanilla `EventSource` dashboard patching (card ids, throttled recent-jobs refresh, live dot); shutdown now closes the shared pool (0 lingering conns); `tests/sse.test.ts` (6) green.
-- Phase 6 complete (branch `phase-6-dlq`, merged): `GET /api/dlq`, `/dlq` page with replay buttons, `POST /api/dlq/:id/replay` resets attempts and moves jobs back to `queued`; `requireToken` on replays; fragments for htmx table rows and page nav; `tests/dlq.test.ts` (8) green. Phases 7–8 and 11 not started.
-- Phase 9–10 complete (branch `phase-9-10-docker-ci`, merged): multi-stage Docker image with healthcheck, clean-checkout compose defaults for app + Postgres + optional Adminer/seed service, idempotent demo seed data, and GitHub Actions CI for lint, typecheck, migrations, build, tests, and Docker image build.
+- Phase 6 complete (branch `phase-6-dlq`, merged): `GET /api/dlq`, `/dlq` page with replay buttons, `POST /api/dlq/:id/replay` resets attempts and moves jobs back to `queued`; `requireToken` on replays; fragments for htmx table rows and page nav; `tests/dlq.test.ts` (8) green.
+- Phase 7 complete (branch `phase-7-recurring-jobs`, merged): `cron-parser` validation + next-fire computation, schedules CRUD (`POST`/`GET`/`PATCH` with `requireToken` on mutations), in-process ticker (`SCHEDULER_TICK_MS`, row-locked fire-once, skip-over-duplicate) wired into boot/shutdown, `/schedules` page with create form + enable/disable toggles + nav link; `tests/schedules.test.ts` (12) green.
+- Phase 9–10 complete (branch `phase-9-10-docker-ci`, merged): multi-stage Docker image with healthcheck, clean-checkout compose defaults for app + Postgres + optional Adminer/seed service, idempotent demo seed data, and GitHub Actions CI for lint, typecheck, migrations, build, tests, and Docker image build. Phases 8 and 11 not started.

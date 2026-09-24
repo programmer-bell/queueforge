@@ -1,7 +1,7 @@
 import { config } from '../config.js';
 import { escapeHtml } from './html.js';
 
-export type NavPage = 'dashboard' | 'jobs' | 'dlq';
+export type NavPage = 'dashboard' | 'jobs' | 'dlq' | 'schedules';
 
 /**
  * Base layout: Bootstrap 5 + htmx via CDN, navbar, optional "Manage" token
@@ -28,6 +28,7 @@ export function layout(title: string, active: NavPage, body: string): string {
 <a class="nav-link${active === 'dashboard' ? ' active' : ''}" href="/">Dashboard</a>
 <a class="nav-link${active === 'jobs' ? ' active' : ''}" href="/jobs">Jobs</a>
 <a class="nav-link${active === 'dlq' ? ' active' : ''}" href="/dlq">DLQ</a>
+<a class="nav-link${active === 'schedules' ? ' active' : ''}" href="/schedules">Schedules</a>
 </div>
 ${tokenGate}
 </div>
