@@ -3,9 +3,11 @@ import { config } from './config.js';
 import { closePool } from './db/pool.js';
 import { stopStatsTicker, startStatsTicker } from './events/statsTicker.js';
 import { shutdownWorkerPool, startWorkerPool } from './jobs/poolManager.js';
+import { startScheduler, stopScheduler } from './jobs/scheduler.js';
 import { logger } from './logger.js';
 import { eventsRouter } from './routes/events.js';
 import { dlqRouter } from './routes/dlq.js';
+import { schedulesRouter } from './routes/schedules.js';
 import { jobsRouter } from './routes/jobs.js';
 import { pagesRouter } from './routes/pages.js';
 import { statsRouter } from './routes/stats.js';
@@ -21,6 +23,7 @@ export function createApp(): Express {
 
   app.use('/api/jobs', jobsRouter);
   app.use('/api/dlq', dlqRouter);
+  app.use('/api/schedules', schedulesRouter);
   app.use('/api/stats', statsRouter);
   app.use('/events', eventsRouter);
   app.use('/', pagesRouter);
@@ -39,6 +42,7 @@ const isMainModule =
 if (isMainModule && process.env['VITEST'] === undefined) {
   await startWorkerPool();
   startStatsTicker();
+  startScheduler();
   const server = app.listen(config.port, () => {
     logger.info({ port: config.port, nodeEnv: config.nodeEnv }, 'queueforge listening');
   });
@@ -48,6 +52,7 @@ if (isMainModule && process.env['VITEST'] === undefined) {
   const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
     logger.info({ signal }, 'shutdown signal received, draining workers');
     await shutdownWorkerPool();
+    stopScheduler();
     stopStatsTicker();
     await closePool();
     server.closeAllConnections?.();
