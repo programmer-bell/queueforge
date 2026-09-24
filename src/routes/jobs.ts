@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { config } from '../config.js';
 import { pool } from '../db/pool.js';
 import { respond } from '../http/respond.js';
+import { enqueueRateLimiter } from '../middleware/rateLimit.js';
 import { requireToken } from '../middleware/requireToken.js';
 import { cancelJob } from '../jobs/cancelJob.js';
 import { enqueueJob } from '../jobs/enqueue.js';
@@ -38,8 +39,8 @@ function validationFailed(error: z.ZodError): { error: string; details: unknown 
 
 export const jobsRouter = Router();
 
-// POST /api/jobs — enqueue (gated: state-changing).
-jobsRouter.post('/', requireToken, (req, res, next) => {
+// POST /api/jobs — enqueue (rate-limited per IP, then gated: state-changing).
+jobsRouter.post('/', enqueueRateLimiter, requireToken, (req, res, next) => {
   const parsed = enqueueSchema.safeParse(req.body);
   if (!parsed.success) {
     respond(req, res, {

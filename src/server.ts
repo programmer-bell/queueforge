@@ -1,10 +1,14 @@
 import express, { type Express } from 'express';
+import helmet from 'helmet';
+import { pinoHttp } from 'pino-http';
+import { randomUUID } from 'node:crypto';
 import { config } from './config.js';
 import { closePool } from './db/pool.js';
 import { stopStatsTicker, startStatsTicker } from './events/statsTicker.js';
 import { shutdownWorkerPool, startWorkerPool } from './jobs/poolManager.js';
 import { startScheduler, stopScheduler } from './jobs/scheduler.js';
 import { logger } from './logger.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { eventsRouter } from './routes/events.js';
 import { dlqRouter } from './routes/dlq.js';
 import { schedulesRouter } from './routes/schedules.js';
@@ -15,6 +19,39 @@ import { statsRouter } from './routes/stats.js';
 export function createApp(): Express {
   const app = express();
   app.use(express.json());
+
+  // Security headers. CSP allows the dashboard's inline scripts plus the
+  // pinned Bootstrap/htmx CDNs — everything else stays locked down.
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", 'unpkg.com', 'cdn.jsdelivr.net'],
+          styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
+          imgSrc: ["'self'", 'data:'],
+          connectSrc: ["'self'"],
+          frameAncestors: ["'self'"],
+        },
+      },
+    }),
+  );
+
+  // Structured request logs with IDs; honors an incoming X-Request-Id.
+  app.use(
+    pinoHttp({
+      logger,
+      genReqId: (req) => {
+        const incoming = req.headers['x-request-id'];
+        return typeof incoming === 'string' && incoming.length > 0 ? incoming : randomUUID();
+      },
+    }),
+  );
+  app.use((req, res, next) => {
+    const id: unknown = (req as { id?: unknown }).id;
+    if (typeof id === 'string') res.setHeader('x-request-id', id);
+    next();
+  });
 
   // Liveness/readiness probe for Render (healthCheckPath: /health).
   app.get('/health', (_req, res) => {
@@ -27,6 +64,9 @@ export function createApp(): Express {
   app.use('/api/stats', statsRouter);
   app.use('/events', eventsRouter);
   app.use('/', pagesRouter);
+
+  app.use(notFoundHandler);
+  app.use(errorHandler);
 
   return app;
 }
