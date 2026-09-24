@@ -2,16 +2,23 @@ services:
   app:
     build:
       context: .
-      target: builder      # dev target: run against compiled-once build, re-run `npm run build` on change,
-                            # or swap CMD below for `npm run dev` (tsx watch) if you prefer hot reload.
-    command: sh -c "npm run migrate && npm run dev"
+      target: builder
+    command: sh -c "npm run migrate && npm run build && npm run start"
     ports:
-      - "3000:3000"
-    env_file:
-      - .env
+      - "${PORT:-3000}:3000"
     environment:
-      DATABASE_URL: postgres://queueforge:queueforge@db:5432/queueforge
+      DATABASE_URL: ${DATABASE_URL:-postgres://queueforge:queueforge@db:5432/queueforge}
+      NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-4}
+      POLL_INTERVAL_MS: ${POLL_INTERVAL_MS:-5000}
+      JOB_MAX_ATTEMPTS_DEFAULT: ${JOB_MAX_ATTEMPTS_DEFAULT:-5}
+      RETRY_BASE_DELAY_SECONDS: ${RETRY_BASE_DELAY_SECONDS:-10}
+      RETRY_MAX_DELAY_SECONDS: ${RETRY_MAX_DELAY_SECONDS:-3600}
+      SHUTDOWN_DRAIN_TIMEOUT_MS: ${SHUTDOWN_DRAIN_TIMEOUT_MS:-25000}
+      SCHEDULER_TICK_MS: ${SCHEDULER_TICK_MS:-30000}
+      ENQUEUE_RATE_LIMIT_PER_MIN: ${ENQUEUE_RATE_LIMIT_PER_MIN:-60}
     volumes:
       - ./src:/app/src
       - ./package.json:/app/package.json
@@ -20,6 +27,11 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health',res=>process.exit(res.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   db:
     image: postgres:16-alpine
@@ -44,7 +56,23 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+
+  # Populate the dashboard with representative jobs:
+  # docker compose --profile tools run --rm seed
+  seed:
+    build:
+      context: .
+      target: builder
+    command: sh -c "npm run migrate && npm run seed"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://queueforge:queueforge@db:5432/queueforge}
+      NODE_ENV: ${NODE_ENV:-development}
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles: ["tools"]
 
 volumes:
   queueforge_pgdata:

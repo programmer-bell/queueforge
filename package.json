@@ -19,7 +19,8 @@
     "typecheck": "tsc --noEmit",
     "pretest": "npm run build",
     "test": "vitest run",
-    "migrate": "tsx src/db/migrate.ts"
+    "migrate": "tsx src/db/migrate.ts",
+    "seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
