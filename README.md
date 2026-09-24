@@ -143,7 +143,18 @@ docker compose up --build
 # Adminer:  http://localhost:8080  (optional DB inspector — see docker-compose.yml)
 ```
 
-Migrations run automatically on container start.
+Migrations run automatically on container start. The compose defaults also work
+without a `.env` file; copy `.env.sample` when you want to customize them.
+
+For representative first-run dashboard data, seed a clean database after the
+services are up:
+
+```bash
+docker compose --profile tools run --rm seed
+```
+
+The seed is idempotent and skips itself when the `jobs` table already contains
+rows.
 
 ## Environment variables
 

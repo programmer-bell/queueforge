@@ -59,12 +59,12 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - [ ] Central error-handling middleware, consistent JSON error shape
 
 ## Phase 9 — Docker & local dev
-- [ ] Confirm `Dockerfile` multi-stage build produces a small runnable image
-- [ ] Confirm `docker-compose.yml` boots app + Postgres (+ optional Adminer) cleanly from a clean checkout
-- [ ] Seed script for demo data (a handful of jobs in various states) — nice for first-run screenshots
+- [x] Confirm `Dockerfile` multi-stage build produces a small runnable image
+- [x] Confirm `docker-compose.yml` boots app + Postgres (+ optional Adminer) cleanly from a clean checkout
+- [x] Seed script for demo data (a handful of jobs in various states) — nice for first-run screenshots
 
 ## Phase 10 — CI
-- [ ] `.github/workflows/ci.yaml` green on a clean PR: lint, typecheck, build, test (against a Postgres service container)
+- [x] `.github/workflows/ci.yaml` green on a clean PR: lint, typecheck, build, test (against a Postgres service container)
 
 ## Phase 11 — Deploy
 - [ ] Provision Neon Postgres, run migrations against it
@@ -81,4 +81,5 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - Phase 3 complete (branch `phase-3-worker`, merged): `SKIP LOCKED` claim (CTE shape + per-type limits in-txn), `worker_threads` pool with LISTEN wake + poll fallback, exp-backoff retry → `dead` DLQ, `SIGTERM` drain shutdown; `tests/claim.test.ts` (9) + `tests/worker.test.ts` (4, incl. live drain/timeout) green; `vitest.config.ts` serializes files on one shared DB.
 - Phase 4 complete (branch `phase-4-dashboard`, merged): layout + nav + token modal, `/` stats cards + enqueue test-job form + recent jobs, `/jobs` filter/pagination, `/jobs/:id` timeline + cancel; `respond()` extended with full-page support; `tests/dashboard.test.ts` (9) green.
 - Phase 5 complete (branch `phase-5-sse`, merged): `GET /events` SSE (framed events, 20s keepalive, no-buffering headers, leak-free unsubscribe), 5s `stats.tick` ticker, `GET /api/stats` snapshot, vanilla `EventSource` dashboard patching (card ids, throttled recent-jobs refresh, live dot); shutdown now closes the shared pool (0 lingering conns); `tests/sse.test.ts` (6) green.
-- Phase 6 complete (branch `phase-6-dlq`, merged): `GET /api/dlq`, `/dlq` page with replay buttons, `POST /api/dlq/:id/replay` resets attempts and moves jobs back to `queued`; `requireToken` on replays; fragments for htmx table rows and page nav; `tests/dlq.test.ts` (8) green. Phases 7–11 not started.
+- Phase 6 complete (branch `phase-6-dlq`, merged): `GET /api/dlq`, `/dlq` page with replay buttons, `POST /api/dlq/:id/replay` resets attempts and moves jobs back to `queued`; `requireToken` on replays; fragments for htmx table rows and page nav; `tests/dlq.test.ts` (8) green. Phases 7–8 and 11 not started.
+- Phase 9–10 complete (branch `phase-9-10-docker-ci`, merged): multi-stage Docker image with healthcheck, clean-checkout compose defaults for app + Postgres + optional Adminer/seed service, idempotent demo seed data, and GitHub Actions CI for lint, typecheck, migrations, build, tests, and Docker image build.
