@@ -67,11 +67,11 @@ Build in this order. Each phase should leave the app in a runnable state. Follow
 - [x] `.github/workflows/ci.yaml` green on a clean PR: lint, typecheck, build, test (against a Postgres service container)
 
 ## Phase 11 — Deploy
-- [ ] Provision Neon Postgres, run migrations against it
-- [ ] Deploy via `render.yaml` blueprint on Render's free plan
-- [ ] Verify SSE stays open behind Render's proxy (no buffering, keepalive visible in dev tools)
-- [ ] Verify a redeploy (`SIGTERM`) doesn't drop an in-flight job — trigger one manually while a slow test job is running
-- [ ] Update README screenshots/status, tag `v1.0.0`
+- [x] Provision Neon Postgres, run migrations against it
+- [x] Deploy via `render.yaml` blueprint on Render's free plan
+- [x] Verify SSE stays open behind Render's proxy (no buffering, keepalive visible in dev tools)
+- [x] Verify a redeploy (`SIGTERM`) doesn't drop an in-flight job — trigger one manually while a slow test job is running
+- [x] Update README screenshots/status, tag `v1.0.0`
 
 ## Status
 
