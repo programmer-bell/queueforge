@@ -14,6 +14,10 @@
   🔴 <strong>Live demo:</strong> <a href="https://queueforge-ukps.onrender.com/">queueforge-ukps.onrender.com</a>
 </p>
 
+<p align="center">
+  <img src="src/icon/queueforge-ukps.onrender.com.png" alt="QueueForge live dashboard — stat cards, enqueue form, and recent jobs" width="880" />
+</p>
+
 Node.js + TypeScript · htmx + Bootstrap dashboard · Server-Sent Events · Postgres `SKIP LOCKED` job claiming · retries with backoff · dead-letter queue · cron-style recurring jobs.
 
 > Third in a series of mini backend services built to demonstrate concurrency, reliability, and data-layer fundamentals across different stacks:
